@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+
+        <script src="js/jquery.js"></script>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+        <title>Hello Firebase World</title>
+    </head>
+
+
+    <style>
+        #fileButton {
+
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            position: absolute;
+            z-index: -1;
+        }
+
+        label, button{
+            box-shadow: 2px 2px 4px black;
+            padding: 12px;
+            margin: 5px;
+            border-radius: 8px;
+            background-color: black;
+            color: white;
+            cursor: pointer;
+        }
+
+        .progressBar {
+            background-color:green;
+            width:100%;
+            height:20px;
+            display:none;
+        }
+
+        .imgResultWidthWrapper {
+            width:300px;
+        }
+    </style>
+
+    <body>
+        <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase.js"></script>
+        <script>
+
+            // Initialize Firebase
+            var config = {
+                apiKey: "yourFirebaseAPIKey",
+                authDomain: "your-project-name.firebaseapp.com",
+                databaseURL: "https://your-project-name.firebaseio.com",
+                projectId: "your-project-name",
+                storageBucket: "your-project-name.appspot.com",
+                messagingSenderId: "youruniqueID"
+            };
+            firebase.initializeApp(config);
+
+        </script>
+
+
+        <input id="fileButton" type="file" accept="*" onchange="resetUpload(event)">
+        <label for="fileButton">Choose a file</label>
+        <button class="upload" onclick="uploadToFirebase();">Upload Image</button> <br>
+        <br/>
+        <img id="output" width="350px"/>
+
+        <div class="imgResultWidthWrapper">
+            <div class="progressBar"></div>
+        </div>
+
+
+        <script>
+            function resetUpload(event){
+                $("button").css("background-color", "black");
+
+                var output = document.getElementById('output');
+                output.src = URL.createObjectURL(event.target.files[0]);
+            }
+
+            function uploadToFirebase(e){
+                $(".progressBar").css("display", "block");
+
+                var file = $("#fileButton")[0].files[0];
+                var storageRef = firebase.storage().ref('companyName/'+Math.floor(Math.random()*1E16)+$("#fileButton")[0].files[0].name);
+
+                //Upload file
+                var task = storageRef.put(file);
+
+                task.on('state_changed',
+                    function progress(snapshot){
+                        var percentage = (snapshot.bytesTransferred / snapshot.totalBytes) *100;
+                        $(".progressBar").css("width", percentage+"%");
+
+                        console.log(snapshot);
+                    },
+                    function error(err){
+                        console.log("firebase error: "+err);
+                        console.log(err);
+                    },
+                    function complete(){
+                        console.log("firebase upload complete");
+                        $("button").css("background-color", "green");
+                        $(".progressBar").css("display", "none");
+
+                    });
+            }
+
+        </script>
+
+    </body>
+</html>
